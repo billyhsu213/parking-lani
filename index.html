@@ -129,7 +129,9 @@
                 gettingGPS: "正在取得真實 GPS 座標並啟動計時...",
                 geoNotSupported: "你嘅瀏覽器唔支援 GPS 定位功能",
                 timeUp: "⏰ 夠鐘啦！快啲去睇車 / 入錶！",
-                timerPrefix: "剩餘時間："
+                timerPrefix: "剩餘時間：",
+                notifTitle: "Parking Lani 提醒",
+                notifBody: "⏰ 夠鐘啦！夠鐘返去移車 / 入錶喇！"
             },
             en: {
                 pageTitle: "Parking Lani",
@@ -144,11 +146,13 @@
                 gettingGPS: "Getting real-time GPS coordinates & starting timer...",
                 geoNotSupported: "Geolocation is not supported by your browser",
                 timeUp: "⏰ Time's up! Head back to your car!",
-                timerPrefix: "Time remaining: "
+                timerPrefix: "Time remaining: ",
+                notifTitle: "Parking Lani Alert",
+                notifBody: "⏰ Time's up! Head back to your car now!"
             }
         };
 
-        let currentLang = 'zh'; // 預設繁體中文
+        let currentLang = 'zh';
         let countdownInterval;
         let lastLat = null;
         let lastLon = null;
@@ -156,7 +160,6 @@
         function toggleLanguage() {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
             updateTexts();
-            // 如果已經有記錄低座標，切換語言時要更新埋對應文字
             if (lastLat && lastLon) {
                 document.getElementById('coords-text').innerText = translations[currentLang].latLon(lastLat, lastLon);
                 document.getElementById('map-link').innerText = translations[currentLang].mapText;
@@ -175,7 +178,17 @@
             document.getElementById('map-link').innerText = t.mapText;
         }
 
+        // 請求瀏覽器通知權限
+        function requestNotificationPermission() {
+            if ("Notification" in window && Notification.permission === "default") {
+                Notification.requestPermission();
+            }
+        }
+
         function recordLocationAndTimer() {
+            // 每次撳掣時順便問一次通知權限
+            requestNotificationPermission();
+
             const statusBox = document.getElementById('status-box');
             const resultBox = document.getElementById('result-box');
             const coordsText = document.getElementById('coords-text');
@@ -214,6 +227,14 @@
                             clearInterval(countdownInterval);
                             timerDisplay.innerText = t.timeUp;
                             timerDisplay.style.color = "#d9534f";
+                            
+                            // 觸發瀏覽器系統通知
+                            if ("Notification" in window && Notification.permission === "granted") {
+                                new Notification(t.notifTitle, {
+                                    body: t.notifBody,
+                                    icon: "https://cdn-icons-png.flaticon.com/512/3202/3202926.png"
+                                });
+                            }
                             return;
                         }
                         updateTimerText(totalSeconds, timerDisplay);
