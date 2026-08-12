@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">泊車啦你 - Parking Lani</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 400px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .lang-switch {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .lang-btn {
+            background: #e9ecef;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .lang-btn:active {
+            background: #ced4da;
+        }
+        h1 {
+            color: #d9534f;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            font-size: 14px;
+        }
+        .input-group {
+            text-align: left;
+            margin-top: 15px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background-color: #0275d8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn:active {
+            background-color: #025aa5;
+        }
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9f7ef;
+            border-radius: 8px;
+            text-align: left;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 語言切換按鈕 -->
+        <div class="lang-switch">
+            <button class="lang-btn" onclick="toggleLanguage()" id="lang-toggle-btn">English</button>
+        </div>
+
+        <h1 id="app-title">🚗 泊車啦你</h1>
+        <p id="app-desc">全球 GPS 泊車與計時小幫手</p>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <div class="input-group">
+            <label id="label-minutes" style="font-weight: bold; font-size: 14px;">⏱️ 泊幾耐（分鐘）：</label>
+            <input type="number" id="minutes-input" value="60" placeholder="60">
+        </div>
+
+        <button class="btn" id="btn-submit" onclick="recordLocationAndTimer()">一鍵記錄位置並開始計時</button>
+
+        <div id="status-box" style="margin-top: 15px;"></div>
+
+        <div id="result-box" class="result-box">
+            <h3 id="result-success-title" style="margin: 0 0 10px 0; color: #2e7d32;">✅ 成功記低車位！</h3>
+            <p id="coords-text" style="margin: 5px 0; font-size: 13px; color: #555;"></p>
+            <div id="timer-display" style="margin: 10px 0; color: #d9534f; font-size: 20px; font-weight: bold;"></div>
+            <a id="map-link" href="#" target="_blank" style="display:block; margin-top:10px; color:#0275d8; font-weight: bold;">📍 喺 Google Maps 打開返去車位</a>
+        </div>
+    </div>
+
+    <script>
+        // 語言字典
+        const translations = {
+            zh: {
+                pageTitle: "泊車啦你 - Parking Lani",
+                langBtn: "English",
+                appTitle: "🚗 泊車啦你",
+                appDesc: "全球 GPS 泊車與計時小幫手",
+                labelMinutes: "⏱️ 泊幾耐（分鐘）：",
+                btnSubmit: "一鍵記錄位置並開始計時",
+                successTitle: "✅ 成功記低車位！",
+                latLon: (lat, lon) => `緯度: ${lat} | 經度: ${lon}`,
+                mapText: "📍 喺 Google Maps 打開返去車位",
+                gettingGPS: "正在取得真實 GPS 座標並啟動計時...",
+                geoNotSupported: "你嘅瀏覽器唔支援 GPS 定位功能",
+                timeUp: "⏰ 夠鐘啦！快啲去睇車 / 入錶！",
+                timerPrefix: "剩餘時間："
+            },
+            en: {
+                pageTitle: "Parking Lani",
+                langBtn: "繁體中文",
+                appTitle: "🚗 Parking Lani",
+                appDesc: "Global GPS Parking & Timer Assistant",
+                labelMinutes: "⏱️ Duration (Minutes):",
+                btnSubmit: "Record Location & Start Timer",
+                successTitle: "✅ Location Saved!",
+                latLon: (lat, lon) => `Lat: ${lat} | Lon: ${lon}`,
+                mapText: "📍 Open in Google Maps to Return",
+                gettingGPS: "Getting real-time GPS coordinates & starting timer...",
+                geoNotSupported: "Geolocation is not supported by your browser",
+                timeUp: "⏰ Time's up! Head back to your car!",
+                timerPrefix: "Time remaining: "
+            }
+        };
+
+        let currentLang = 'zh'; // 預設繁體中文
+        let countdownInterval;
+        let lastLat = null;
+        let lastLon = null;
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            updateTexts();
+            // 如果已經有記錄低座標，切換語言時要更新埋對應文字
+            if (lastLat && lastLon) {
+                document.getElementById('coords-text').innerText = translations[currentLang].latLon(lastLat, lastLon);
+                document.getElementById('map-link').innerText = translations[currentLang].mapText;
+            }
+        }
+
+        function updateTexts() {
+            const t = translations[currentLang];
+            document.getElementById('page-title').innerText = t.pageTitle;
+            document.getElementById('lang-toggle-btn').innerText = t.langBtn;
+            document.getElementById('app-title').innerText = t.appTitle;
+            document.getElementById('app-desc').innerText = t.appDesc;
+            document.getElementById('label-minutes').innerText = t.labelMinutes;
+            document.getElementById('btn-submit').innerText = t.btnSubmit;
+            document.getElementById('result-success-title').innerText = t.successTitle;
+            document.getElementById('map-link').innerText = t.mapText;
+        }
+
+        function recordLocationAndTimer() {
+            const statusBox = document.getElementById('status-box');
+            const resultBox = document.getElementById('result-box');
+            const coordsText = document.getElementById('coords-text');
+            const timerDisplay = document.getElementById('timer-display');
+            const mapLink = document.getElementById('map-link');
+            const minutesInput = document.getElementById('minutes-input').value;
+            const t = translations[currentLang];
+
+            const totalMinutes = parseInt(minutesInput) || 60;
+
+            if (!navigator.geolocation) {
+                statusBox.innerHTML = `<p style='color: #d9534f;'>${t.geoNotSupported}</p>`;
+                return;
+            }
+
+            statusBox.innerHTML = `<p style='color: #f0ad4e;'>${t.gettingGPS}</p>`;
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    lastLat = position.coords.latitude.toFixed(6);
+                    lastLon = position.coords.longitude.toFixed(6);
+                    
+                    statusBox.innerHTML = "";
+                    resultBox.style.display = 'block';
+                    coordsText.innerText = t.latLon(lastLat, lastLon);
+                    mapLink.href = `https://www.google.com/maps/search/?api=1&query=${lastLat},${lastLon}`;
+
+                    clearInterval(countdownInterval);
+
+                    let totalSeconds = totalMinutes * 60;
+                    updateTimerText(totalSeconds, timerDisplay);
+
+                    countdownInterval = setInterval(() => {
+                        totalSeconds--;
+                        if (totalSeconds <= 0) {
+                            clearInterval(countdownInterval);
+                            timerDisplay.innerText = t.timeUp;
+                            timerDisplay.style.color = "#d9534f";
+                            return;
+                        }
+                        updateTimerText(totalSeconds, timerDisplay);
+                    }, 1000);
+                },
+                (error) => {
+                    statusBox.innerHTML = `<p style='color: #d9534f;'>Error: ${error.message}</p>`;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function updateTimerText(totalSeconds, element) {
+            const t = translations[currentLang];
+            const m = Math.floor(totalSeconds / 60);
+            const s = totalSeconds % 60;
+            element.innerText = `${t.timerPrefix}${m} min ${s < 10 ? '0' : ''}${s} sec`;
+        }
+    </script>
+
+</body>
+</html>
