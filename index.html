@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/billyhsu213/parking-lani/refs/heads/main/images.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -180,13 +180,18 @@
             }
         };
 
-        let currentLang = 'zh';
+        // 🌟 改變：從 localStorage 讀取上次儲存嘅語言，如果冇就預設做 'zh'
+        let currentLang = localStorage.getItem('parking_lani_lang') || 'zh';
         let countdownInterval;
         let lastLat = null;
         let lastLon = null;
 
         function toggleLanguage() {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            
+            // 🌟 改變：當用戶手動切換語言時，即刻儲存落 localStorage
+            localStorage.setItem('parking_lani_lang', currentLang);
+
             updateTexts();
             if (lastLat && lastLon) {
                 document.getElementById('coords-text').innerText = translations[currentLang].latLon(lastLat, lastLon);
@@ -249,8 +254,6 @@
                     statusBox.innerHTML = "";
                     resultBox.style.display = 'block';
                     coordsText.innerText = t.latLon(lastLat, lastLon);
-                    
-                    // 已修改：使用更穩陣嘅網址格式，避開 intent:// 錯誤
                     mapLink.href = `https://maps.google.com/?q=${lastLat},${lastLon}`;
                     
                     clearInterval(countdownInterval);
@@ -282,7 +285,7 @@
                         updateTimerText(totalSeconds, timerDisplay);
                     }, 1000);
                 },
-                (error) => { statusBox.innerHTML = `<p style='color: #d9534f;'>Error: ${error.message}</p>`; },
+                (error) => { statusBox.innerHTML = `<p style='color: #d9534f;'>Error: ${error.message}`, statusBox; },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
         }
