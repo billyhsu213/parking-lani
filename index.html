@@ -250,7 +250,7 @@
                     statusBox.innerHTML = "";
                     resultBox.style.display = 'block';
                     coordsText.innerText = t.latLon(lastLat, lastLon);
-                    mapLink.href = `https://www.google.com/maps/search/?api=1&query=${lastLat},${lastLon}`;
+                    mapLink.href = `https://maps.google.com/?q=${lastLat},${lastLon}`;
                     clearInterval(countdownInterval);
                     let totalSeconds = minutesInput * 60;
                     let advanceSeconds = advanceMinutes * 60;
