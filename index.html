@@ -145,8 +145,8 @@
                 mapText: "📍 喺 Google Maps 打開返去車位",
                 gettingGPS: "正在取得真實 GPS 座標並啟動計時...",
                 geoNotSupported: "你嘅瀏覽器唔支援 GPS 定位功能",
-                timeUp: "⏰ 夠鐘啦！快啲去睇車 / 入錶！",
-                advanceNotice: (m) => `⏰ 還有 ${m} 分鐘就夠鐘，準備移車！`,
+                timeUp: "⏰ 夠鐘！快啲去睇車 / 入錶！",
+                advanceNotice: (m) => `⏰ 還有 ${m} 分鐘就夠鐘！`,
                 timerPrefix: "剩餘時間：",
                 notifTitle: "Parking Lani 提醒",
             },
@@ -169,7 +169,7 @@
                 gettingGPS: "Getting real-time GPS coordinates & starting timer...",
                 geoNotSupported: "Geolocation is not supported by your browser",
                 timeUp: "⏰ Time's up! Head back to your car!",
-                advanceNotice: (m) => `⏰ ${m} minutes left! Prepare to head back.`,
+                advanceNotice: (m) => `⏰ ${m} minutes left!`,
                 timerPrefix: "Time remaining: ",
                 notifTitle: "Parking Lani Alert",
             }
@@ -187,10 +187,11 @@
                 document.getElementById('coords-text').innerText = translations[currentLang].latLon(lastLat, lastLon);
                 document.getElementById('map-link').innerText = translations[currentLang].mapText;
             }
-const timerDisplay = document.getElementById('timer-display');
-    if (timerDisplay.innerText.includes("Time's up") || timerDisplay.innerText.includes("夠鐘啦")) {
-        timerDisplay.innerText = translations[currentLang].timeUp;
-    }
+            // **新加呢度：如果已經夠鐘，一切換語言即刻更新埋句提示**
+        const timerDisplay = document.getElementById('timer-display');
+            if (timerDisplay.innerText.includes("Time's up") || timerDisplay.innerText.includes("夠鐘啦")) {
+                timerDisplay.innerText = translations[currentLang].timeUp;
+            }
         }
 
         function updateTexts() {
