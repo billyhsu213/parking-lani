@@ -149,6 +149,8 @@
                 advanceNotice: (m) => `⏰ 還有 ${m} 分鐘就夠鐘！`,
                 timerPrefix: "剩餘時間：",
                 notifTitle: "Parking Lani 提醒",
+                timerPrefix: "剩餘時間：",
+                timeUnit: (m, s) => `${m} 分 ${s < 10 ? '0' : ''}${s} 秒`, // 新增中文單位
             },
             en: {
                 pageTitle: "Parking Lani",
@@ -172,6 +174,8 @@
                 advanceNotice: (m) => `⏰ ${m} minutes left!`,
                 timerPrefix: "Time remaining: ",
                 notifTitle: "Parking Lani Alert",
+                timerPrefix: "Time remaining: ",
+                timeUnit: (m, s) => `${m} min ${s < 10 ? '0' : ''}${s} sec`, // 新增英文單位
             }
         };
 
@@ -310,7 +314,7 @@
             const t = translations[currentLang];
             const m = Math.floor(totalSeconds / 60);
             const s = totalSeconds % 60;
-            element.innerText = `${t.timerPrefix}${m} min ${s < 10 ? '0' : ''}${s} sec`;
+            element.innerText = `${t.timerPrefix}${t.timeUnit(m, s)}`;
         }
     </script>
 <script>
