@@ -20,7 +20,6 @@
         }
         .container {
             max-width: 400px;
-            /* 呢度改咗 margin-top 令個位低啲 */
             margin: 80px auto 30px auto;
             background: white;
             padding: 25px;
@@ -250,7 +249,10 @@
                     statusBox.innerHTML = "";
                     resultBox.style.display = 'block';
                     coordsText.innerText = t.latLon(lastLat, lastLon);
-                    mapLink.href = `https://www.google.com/maps/search/?api=1&query=${lastLat},${lastLon}&hl=zh-TW`;
+                    
+                    // 已修改：使用更穩陣嘅網址格式，避開 intent:// 錯誤
+                    mapLink.href = `https://maps.google.com/?q=${lastLat},${lastLon}`;
+                    
                     clearInterval(countdownInterval);
                     let totalSeconds = minutesInput * 60;
                     let advanceSeconds = advanceMinutes * 60;
