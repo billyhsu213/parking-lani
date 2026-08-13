@@ -20,7 +20,8 @@
         }
         .container {
             max-width: 400px;
-            margin: 30px auto;
+            /* 呢度改咗 margin-top 令個位低啲 */
+            margin: 80px auto 30px auto;
             background: white;
             padding: 25px;
             border-radius: 16px;
@@ -91,7 +92,6 @@
 <body>
 
     <div class="container">
-        <!-- 語言切換按鈕 -->
         <div class="lang-switch">
             <button class="lang-btn" onclick="toggleLanguage()" id="lang-toggle-btn">English</button>
         </div>
@@ -153,8 +153,7 @@
                 advanceNotice: (m) => `⏰ 還有 ${m} 分鐘就夠鐘！`,
                 timerPrefix: "剩餘時間：",
                 notifTitle: "Parking Lani 提醒",
-                timerPrefix: "剩餘時間：",
-                timeUnit: (m, s) => `${m} 分 ${s < 10 ? '0' : ''}${s} 秒`, // 新增中文單位
+                timeUnit: (m, s) => `${m} 分 ${s < 10 ? '0' : ''}${s} 秒`
             },
             en: {
                 pageTitle: "Parking Lani",
@@ -178,8 +177,7 @@
                 advanceNotice: (m) => `⏰ ${m} minutes left!`,
                 timerPrefix: "Time remaining: ",
                 notifTitle: "Parking Lani Alert",
-                timerPrefix: "Time remaining: ",
-                timeUnit: (m, s) => `${m} min ${s < 10 ? '0' : ''}${s} sec`, // 新增英文單位
+                timeUnit: (m, s) => `${m} min ${s < 10 ? '0' : ''}${s} sec`
             }
         };
 
@@ -195,9 +193,8 @@
                 document.getElementById('coords-text').innerText = translations[currentLang].latLon(lastLat, lastLon);
                 document.getElementById('map-link').innerText = translations[currentLang].mapText;
             }
-            // **新加呢度：如果已經夠鐘，一切換語言即刻更新埋句提示**
-        const timerDisplay = document.getElementById('timer-display');
-            if (timerDisplay.innerText.includes("Time's up") || timerDisplay.innerText.includes("夠鐘啦")) {
+            const timerDisplay = document.getElementById('timer-display');
+            if (timerDisplay.innerText.includes("Time's up") || timerDisplay.innerText.includes("夠鐘")) {
                 timerDisplay.innerText = translations[currentLang].timeUp;
             }
         }
@@ -211,7 +208,6 @@
             document.getElementById('label-minutes').innerText = t.labelMinutes;
             document.getElementById('label-advance').innerText = t.labelAdvance;
             
-            // 更新下拉選單文字
             const select = document.getElementById('advance-select');
             select.options[0].text = t.opt0;
             select.options[1].text = t.opt5;
@@ -232,7 +228,6 @@
 
         function recordLocationAndTimer() {
             requestNotificationPermission();
-
             const statusBox = document.getElementById('status-box');
             const resultBox = document.getElementById('result-box');
             const coordsText = document.getElementById('coords-text');
@@ -246,71 +241,47 @@
                 statusBox.innerHTML = `<p style='color: #d9534f;'>${t.geoNotSupported}</p>`;
                 return;
             }
-
             statusBox.innerHTML = `<p style='color: #f0ad4e;'>${t.gettingGPS}</p>`;
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     lastLat = position.coords.latitude.toFixed(6);
                     lastLon = position.coords.longitude.toFixed(6);
-                    
                     statusBox.innerHTML = "";
                     resultBox.style.display = 'block';
                     coordsText.innerText = t.latLon(lastLat, lastLon);
                     mapLink.href = `https://www.google.com/maps/search/?api=1&query=${lastLat},${lastLon}`;
-
                     clearInterval(countdownInterval);
-
                     let totalSeconds = minutesInput * 60;
                     let advanceSeconds = advanceMinutes * 60;
                     let hasNotifiedAdvance = false;
                     let hasNotifiedEnd = false;
-
                     updateTimerText(totalSeconds, timerDisplay);
-
                     countdownInterval = setInterval(() => {
                         totalSeconds--;
-
-                        // 檢查是否到了「提前通知」的時間点
                         if (advanceMinutes > 0 && !hasNotifiedAdvance && totalSeconds === advanceSeconds) {
                             hasNotifiedAdvance = true;
                             if ("Notification" in window && Notification.permission === "granted") {
-                                new Notification(t.notifTitle, {
-                                    body: t.advanceNotice(advanceMinutes),
-                                    icon: "https://cdn-icons-png.flaticon.com/512/3202/3202926.png"
-                                });
+                                new Notification(t.notifTitle, { body: t.advanceNotice(advanceMinutes), icon: "https://cdn-icons-png.flaticon.com/512/3202/3202926.png" });
                             }
                         }
-
-                        // 檢查是否夠鐘
                         if (totalSeconds <= 0) {
                             clearInterval(countdownInterval);
                             timerDisplay.innerText = t.timeUp;
                             timerDisplay.style.color = "#d9534f";
-                            
                             if (advanceMinutes !== -1 && !hasNotifiedEnd) {
                                 hasNotifiedEnd = true;
                                 if ("Notification" in window && Notification.permission === "granted") {
-                                    new Notification(t.notifTitle, {
-                                        body: t.timeUp,
-                                        icon: "https://cdn-icons-png.flaticon.com/512/3202/3202926.png"
-                                    });
+                                    new Notification(t.notifTitle, { body: t.timeUp, icon: "https://cdn-icons-png.flaticon.com/512/3202/3202926.png" });
                                 }
                             }
                             return;
                         }
-
                         updateTimerText(totalSeconds, timerDisplay);
                     }, 1000);
                 },
-                (error) => {
-                    statusBox.innerHTML = `<p style='color: #d9534f;'>Error: ${error.message}</p>`;
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
+                (error) => { statusBox.innerHTML = `<p style='color: #d9534f;'>Error: ${error.message}</p>`; },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
         }
 
