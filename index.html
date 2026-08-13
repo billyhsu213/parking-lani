@@ -255,6 +255,10 @@
                     resultBox.style.display = 'block';
                     coordsText.innerText = t.latLon(lastLat, lastLon);
                     mapLink.href = `https://maps.google.com/?q=${lastLat},${lastLon}`;
+
+                    if (typeof Android !== "undefined") {
+                        Android.startTimer(minutesInput);
+                    }
                     
                     clearInterval(countdownInterval);
                     let totalSeconds = minutesInput * 60;
