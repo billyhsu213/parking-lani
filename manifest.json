@@ -1,14 +1,19 @@
 {
-  "name": "Parking Lani",
-  "short_name": "Parking Lani",
+  "name": "泊車啦你",
+  "short_name": "泊車啦你",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f4f6f8",
-  "theme_color": "#0275d8",
+  "background_color": "#ffffff",
+  "theme_color": "#d9534f",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3202/3202926.png",
-      "sizes": "512x512",
+      "src": "images.png", 
+      "sizes": "554x554",
+      "type": "image/png"
+    },
+    {
+      "src": "images.png",
+      "sizes": "554x554",
       "type": "image/png"
     }
   ]
