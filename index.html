@@ -256,8 +256,10 @@
                     coordsText.innerText = t.latLon(lastLat, lastLon);
                     mapLink.href = `https://maps.google.com/?q=${lastLat},${lastLon}`;
 
-                    if (typeof Android !== "undefined") {
-                        Android.startTimer(minutesInput);
+                    const targetMinutes = minutesInput - advanceMinutes;
+
+                    if (targetMinutes > 0 && typeof Android !== "undefined") {
+                        Android.startTimer(targetMinutes);
                     }
                     
                     clearInterval(countdownInterval);
