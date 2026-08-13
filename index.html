@@ -187,6 +187,10 @@
                 document.getElementById('coords-text').innerText = translations[currentLang].latLon(lastLat, lastLon);
                 document.getElementById('map-link').innerText = translations[currentLang].mapText;
             }
+const timerDisplay = document.getElementById('timer-display');
+    if (timerDisplay.innerText.includes("Time's up") || timerDisplay.innerText.includes("夠鐘啦")) {
+        timerDisplay.innerText = translations[currentLang].timeUp;
+    }
         }
 
         function updateTexts() {
